@@ -1,0 +1,427 @@
+import java.io.File
+val dataInvalida ="Data invalida"
+val perguntaData = "Qual a sua data de nascimento? (dd-mm-yyyy)"
+var sair = false
+fun criaMenu(): String {return "\nBem vindo ao jogo das tendas\n\n1 - Novo jogo\n0 - Sair\n"}
+fun validaRespostaMenu(): Int{
+    var respostaMenu = readLine()?.toIntOrNull()?:-1
+    while (respostaMenu!=0 && respostaMenu!=1){
+        println("Opcao invalida")
+        println(criaMenu())
+        respostaMenu = readLine()?.toIntOrNull()?:-1 }
+    if (respostaMenu==1){return 1} else   return 0}
+fun validaTamanhoMapa(numLinhas: Int, numColunas: Int): Boolean{
+    if (numLinhas==6){ if (numColunas==5 || numColunas==6) return true
+    }else if (numLinhas==8){ if (numColunas==8 || numColunas==10) return true
+    }else if (numLinhas==10){ if(numColunas==8 || numColunas==10) return true}
+    return false}
+fun validaNumerosData(data: String) : Boolean{
+    if (validaNumero(data[0]) && validaNumero(data[1])){
+        if (validaNumero(data[3]) && validaNumero(data[4])){
+            if (validaNumero(data[6]) && validaNumero(data[7])
+                    && validaNumero(data[8]) && validaNumero(data[9])){
+                return true }
+        }
+    }
+    return false
+}
+fun validaTrintaUmDias(mes : Int) : Boolean{
+    if (mes == 1 || mes == 3 || mes == 5 || mes == 7){
+        return true}
+    if (mes == 8 || mes == 10 || mes == 12){
+        return true}
+    return false
+}
+fun validaDataNascimento(data: String?) : String? {
+    val menor = "Menor de idade nao pode jogar"
+    val invalida = dataInvalida
+    if (data?.length == 10) {    //XX-XX-XXXX
+        if ((data[2]).toString() == "-" && (data[5]).toString() == "-") {
+            if (validaNumerosData(data)) {
+                val dia = (data[0].toString() + data[1].toString()).toInt()
+                val mes = (data[3].toString() + data[4].toString()).toInt()
+                val ano = (data[6].toString() + data[7].toString()
+                        + data[8].toString() + data[9].toString()).toInt()
+                if (mes in 1..12) {
+                    if (validaTrintaUmDias(mes)) {
+                        if (dia in 1..31) {
+                            if (ano in 2005..2022) {
+                                return menor
+                            } else if (ano == 2004) {
+                                if (mes >= 11) {
+                                    return menor
+                                }
+                            } else return null
+                        } else return invalida
+                    } else if (mes == 4 || mes == 6 || mes == 9 || mes == 11) {
+                        if (dia in 1..30) {
+                            if (ano in 2005..2022) {
+                                return menor
+                            } else if (ano == 2004) {
+                                if (mes >= 11) {
+                                    return menor
+                                }
+                            } else return null
+                        } else return invalida
+                    } else if (mes == 2) {
+                        if ((ano % 4 == 0 && ano % 100 != 0) || ano % 400 == 0) {
+                            if (dia in 1..29) {
+                                if (ano in 2005..2022) {
+                                    return menor
+                                } else return null
+                            }
+                            return invalida
+                        } else if (dia in 1..28) {
+                            if (ano > 2004) {
+                                return menor
+                            } else return null
+                        }
+                        return invalida
+                    }
+                } else return invalida
+            } else return invalida
+        } else return invalida
+    } else return invalida
+    return null
+}
+fun validaNumero(char :Char) : Boolean{return char=='0' || char =='1'|| char =='2' || char =='3'
+        || char =='4'|| char =='5'|| char =='6'|| char =='7'|| char =='8'|| char =='9'}
+fun criaLegendaHorizontal(numColunas: Int): String{
+    val codigoAsciiA = 'A'.code
+    var count =0
+    var legenda =""
+    while (count<numColunas){
+        if (count>0){
+            legenda+=" " }
+        legenda += ((codigoAsciiA + count).toChar())
+        if (count!=numColunas-1){
+            legenda += " |" }
+        count++ }
+    return legenda}
+fun processaCoordenadas(coordenadas: String?, numLines: Int, numColumns: Int): Pair<Int,Int>?{
+    val coordenadasPair : Pair<Int,Int>?
+    if (coordenadas == null || coordenadas == "") {
+        return null}
+    if (coordenadas.length != 3 && coordenadas.length != 4) {
+        return null }
+    if (coordenadas[0].toString() + coordenadas[1].toString() == "10") {
+        if (numLines==10){
+            if (coordenadas.last().code >= 65 && coordenadas.last().code < (65 + numColumns)) {
+                if (coordenadas.first().toString().toInt() in 1..numLines) {
+                    if (coordenadas[2] == ','){
+                        coordenadasPair = Pair(9,coordenadas.last().code-65)
+                        return coordenadasPair
+                    }else return null
+                }else return null
+            }else return null}else return null
+    } else if (validaNumero(coordenadas[0])) {
+        if (coordenadas[0] != '0') {
+            if (coordenadas.last().code >= 65 && coordenadas.last().code < (65 + numColumns)) {
+                if (coordenadas.first().toString().toInt() in 1..numLines){
+                    if (coordenadas[1]==','){
+                        coordenadasPair = Pair(coordenadas.first().toString().toInt()-1,coordenadas.last().code-65)
+                        return coordenadasPair
+                    }else return null
+                }else return null
+            }else return null
+        }else return null
+    }else return null
+}
+fun criaLegendaContadoresHorizontal(contadoresVerticais: Array<Int?>): String{
+    var legenda : String = ""
+    for (contador in 0 until contadoresVerticais.size) {
+        if (contadoresVerticais[contador] == null) {
+            legenda += " "
+        } else {
+            legenda += contadoresVerticais[contador].toString() }
+        if (contador != contadoresVerticais.size - 1) {
+            legenda += "   "
+        }
+    }
+    return legenda
+}
+fun numeroArvores(numLines: Int,numColumns: Int) : Int{
+    val nomeFicheiro :String = (numLines.toString()+"x"+numColumns.toString()+".txt")
+    val documentoTerreno = File(nomeFicheiro).readLines()
+    val numeroArvores : Int = documentoTerreno.size-2
+    return numeroArvores
+}
+fun leCoordenadasArvores(numLines: Int,numColumns: Int) : Array<Pair<Int,Int>>{
+    val nomeFicheiro :String = (numLines.toString()+"x"+numColumns.toString()+".txt")
+    val documentoTerreno = File(nomeFicheiro).readLines()
+    val numeroArvores = numeroArvores(numLines,numColumns)
+    val coordenadas : Array<Pair<Int,Int>>
+    coordenadas = Array(numeroArvores){ Pair(0,0) }
+    var primeiroNumero = 0
+    var segundoNumero = 0
+    var count = 0
+    for (linhaDocumento in 2 until documentoTerreno.size){
+        primeiroNumero = documentoTerreno[linhaDocumento].split(",")[0].toInt()
+        segundoNumero = documentoTerreno[linhaDocumento].split(",")[1].toInt()
+        coordenadas[count] = Pair(primeiroNumero,segundoNumero)
+        count++
+    }
+    return coordenadas
+}
+fun leContadoresDoFicheiro(numLines:Int, numColumns: Int, verticais:Boolean): Array<Int?>{
+    val nomeFicheiro :String = (numLines.toString()+"x"+numColumns.toString()+".txt")
+    val documentoTerreno = File(nomeFicheiro).readLines()
+    if (verticais){
+        val contadoresVerticalPartes = documentoTerreno[0].split(",")
+        val contadoresVertical : Array<Int?> = Array(numColumns){null}
+        for (coluna in 0 until contadoresVerticalPartes.size){
+            if (contadoresVerticalPartes[coluna]=="0"){
+                contadoresVertical[coluna]= null
+            }else contadoresVertical[coluna]= contadoresVerticalPartes[coluna].toInt()}
+        return contadoresVertical
+    }else{
+        val contadoresHorizontalPartes = documentoTerreno[1].split(",")
+        val contadoresHorizontal : Array<Int?> = Array(numLines){null}
+        for (coluna in 0 until contadoresHorizontalPartes.size){
+            if (contadoresHorizontalPartes[coluna]=="0"){
+                contadoresHorizontal[coluna]= null
+            }else contadoresHorizontal[coluna]= contadoresHorizontalPartes[coluna].toInt()}
+        return contadoresHorizontal }
+}
+fun leTerrenoDoFicheiro(numLines: Int,numColumns: Int):Array<Array<String?>>{
+    val matrizTereeno : Array<Array<String?>> = Array(numLines){ Array(numColumns){null} }
+    leCoordenadasArvores(numLines,numColumns)
+    val numeroArvores = numeroArvores(numLines,numColumns)
+    var count = 0
+    val coordenadasArvores = leCoordenadasArvores(numLines,numColumns)
+    while (count<numeroArvores){
+        //alterar matriz para adicionar um A
+        matrizTereeno[coordenadasArvores[count].first][coordenadasArvores[count].second] = "A"
+        coordenadasArvores[count]
+        count++ }
+    return matrizTereeno
+}
+fun criaTerreno(terreno:Array<Array<String?>>,contadoresVerticais: Array<Int?>?,
+                contadoresHorizontais: Array<Int?>?,mostraLegendaHorizontal: Boolean,mostraLegendaVertical: Boolean):String{
+    var terrenoString = ""
+    val numLines = terreno.size
+    val numColumns = terreno[0].size
+    if (contadoresVerticais != null){
+        terrenoString += "       "
+        terrenoString += criaLegendaContadoresHorizontal(contadoresVerticais)
+        terrenoString += "\n"}
+    if (mostraLegendaHorizontal) {
+        terrenoString += "     | " + criaLegendaHorizontal(numColumns) + "\n" }
+    for (linhas in 0 until numLines){
+        if (contadoresHorizontais != null){
+            if (contadoresHorizontais[linhas]==null){
+                terrenoString += "  "
+            }else{
+                terrenoString += contadoresHorizontais[linhas].toString() + " "}
+        }else{
+            terrenoString += "  " }
+        if (mostraLegendaVertical) {
+            if (linhas+1 < 10) {
+                terrenoString += " " + (linhas+1) + " | "
+            } else terrenoString += (linhas+1).toString() + " | "
+        }else{
+            terrenoString += "   | " }
+        for (colunas in 0 until numColumns){
+            if (terreno[linhas][colunas] == null){
+                if (colunas!=numColumns-1) {
+                    terrenoString += "  " }
+            }else{
+                if (terreno[linhas][colunas] == "A"){
+                    terrenoString+="\u25B3"
+                    if (colunas != numColumns-1){
+                        terrenoString += " " }
+                } else{
+                    terrenoString+= terreno[linhas][colunas].toString()
+                    if (colunas != numColumns-1){
+                        terrenoString += " " }}}
+            if (colunas != numColumns-1){
+                terrenoString += "| "
+            }else{
+                if (terreno[linhas][colunas] == "A" || terreno[linhas][colunas] != null){
+                    terrenoString += ""
+                }else terrenoString += " "
+            }}
+        if (linhas != numLines-1){
+            terrenoString+="\n"} }
+    return terrenoString
+}
+fun temArvoreAdjacente(terreno:Array<Array<String?>>, coords:Pair<Int, Int>) : Boolean{
+    val coordsLinhas = coords.first.toInt()
+    val coordsColunas = coords.second.toInt()
+    if (coordsColunas-1>=0) {
+        if (terreno[coordsLinhas][coordsColunas - 1] == "A") {
+            return true }}
+    if (coordsColunas+1<terreno[0].size){
+        if (terreno[coordsLinhas][coordsColunas+1]=="A"){
+            return true}}
+    if (coordsLinhas-1>=0) {
+        if (terreno[coordsLinhas-1][coordsColunas]=="A"){
+            return true}}
+    if (coordsLinhas+1<terreno.size){
+        if (terreno[coordsLinhas+1][coordsColunas]=="A"){
+            return true}}
+    return false }
+fun temTendaAdjacente(terreno:Array<Array<String?>>, coords:Pair<Int, Int>) : Boolean{
+    val coordsLinhas = coords.first.toInt()
+    val coordsColunas = coords.second.toInt()
+    if (coordsColunas-1>=0) {
+        if (terreno[coordsLinhas][coordsColunas - 1] == "T") {
+            return true}
+        if (coordsLinhas-1>=0){
+            if (terreno[coordsLinhas-1][coordsColunas - 1] == "T"){
+                return true } }
+        if (coordsLinhas+1<terreno.size){
+            if (terreno[coordsLinhas+1][coordsColunas - 1] == "T"){
+                return true}}}
+    if (coordsColunas+1<terreno[0].size){
+        if (terreno[coordsLinhas][coordsColunas+1]=="T"){
+            return true}
+        if (coordsLinhas-1>=0){
+            if (terreno[coordsLinhas-1][coordsColunas + 1] == "T"){
+                return true } }
+        if (coordsLinhas+1<terreno.size){
+            if (terreno[coordsLinhas+1][coordsColunas + 1] == "T"){
+                return true}}}
+
+    if (coordsLinhas-1>=0) {
+        if (terreno[coordsLinhas-1][coordsColunas]=="T"){
+            return true}}
+    if (coordsLinhas+1<terreno.size){
+        if (terreno[coordsLinhas+1][coordsColunas]=="T"){
+            return true}}
+    return false
+}
+fun contaTendasColuna(terreno:Array<Array<String?>>, coluna: Int):Int{
+    var count = 0
+    for (linha in 0 until terreno.size){
+        if (terreno[linha][coluna] == "T"){
+            count++ }
+    }
+    return count
+}
+fun contaTendasLinha(terreno:Array<Array<String?>>, linha: Int):Int{
+    var count = 0
+    for (coluna in 0 until terreno[0].size){
+        if (terreno[linha][coluna] == "T"){
+            count++ }
+    }
+    return count
+}
+fun colocaTenda(terreno:Array<Array<String?>>, coords:Pair<Int, Int>): Boolean{
+    if (terreno[coords.first][coords.second] == null){
+        if (temArvoreAdjacente(terreno,coords)){
+            if (!(temTendaAdjacente(terreno,coords))){
+                terreno[coords.first][coords.second] = "T"
+                return true } }
+    }else if (terreno[coords.first][coords.second] == "T"){
+        terreno[coords.first][coords.second]=null
+        return true
+    }
+    return false}
+fun atualizaTerreno (terreno: Array<Array<String?>>, coords: Pair<Int, Int>, podeColocarTenda : Boolean) : Array<Array<String?>>{
+    if (podeColocarTenda){
+        terreno[coords.first][coords.second] = "T"
+    }
+    return terreno
+}
+fun terminouJogo(terreno:Array<Array<String?>>,contadoresVerticais: Array<Int?>,contadoresHorizontais: Array<Int?>):Boolean{
+    for (arvore in 0 until numeroArvores(terreno.size,terreno[0].size)){
+        if (!temTendaAdjacente(terreno,leCoordenadasArvores(terreno.size,terreno[0].size)[arvore])){
+            return false } }
+    for (coluna in 0 until terreno[0].size){
+        if (contadoresVerticais[coluna] != null){
+            if (contaTendasColuna(terreno,coluna) != contadoresVerticais[coluna]){
+                return false }
+        }else if (contaTendasColuna(terreno,coluna) != 0){
+                return false } }
+
+    for (linha in 0 until terreno.size){
+        if (contadoresHorizontais[linha] != null){
+            if (contaTendasLinha(terreno,linha) != contadoresHorizontais[linha]){
+                return false }
+        } else if (contaTendasLinha(terreno,linha) != 0){
+            return false} }
+    return true
+}
+fun coordenadasPair (respostaCoordenadas : String?): Pair<Int,Int> {
+    if (respostaCoordenadas != null) {
+        if (respostaCoordenadas[0] == '1' && respostaCoordenadas [1] == '0'){
+            println(respostaCoordenadas[3].code-65)
+            return Pair(9,respostaCoordenadas[3].code-65)
+        }else   return Pair(respostaCoordenadas [0].toString().toInt()-1,respostaCoordenadas[2].code-65) }
+    return Pair(0,0)
+}
+
+fun main() {
+    println(criaMenu())
+    var terreno : Array<Array<String?>>
+    var respostaMenu =validaRespostaMenu()
+    while (sair == false) {
+        while (respostaMenu != 0) {
+            println("Quantas linhas?")
+            var linhas = readLine()?.toIntOrNull() ?: -1
+            while (linhas <= 0) {
+                println("Resposta invalida\nQuantas linhas?")
+                linhas = readLine()?.toIntOrNull() ?: -1 }
+            println("Quantas colunas?")
+            var colunas = readLine()?.toIntOrNull() ?: -1
+            while (colunas <= 0) {
+                println("Resposta invalida\nQuantas colunas?")
+                colunas = readLine()?.toIntOrNull() ?: -1 }
+            var respostaData = validaDataNascimento("")
+            if (validaTamanhoMapa(linhas, colunas)) {
+                if (linhas == 10 && colunas == 10) {
+                    println(perguntaData)
+                    var dataNascimento = readLine()?.toString() ?: ""
+                    while (respostaData == dataInvalida) {
+                        respostaData = validaDataNascimento(dataNascimento)
+                        when (respostaData) {
+                            "Menor de idade nao pode jogar" -> println(respostaData)
+                            dataInvalida -> {
+                                println(respostaData)
+                                println(perguntaData)
+                                dataNascimento = readLine()?.toString() ?: "" }
+                            else -> respostaData = null } }
+                } else respostaData = null
+                if (respostaData == null) {
+                    terreno = leTerrenoDoFicheiro(linhas, colunas)
+                    var respostaCoordenadas: String? = ""
+                    while (!terminouJogo(terreno, leContadoresDoFicheiro(linhas, colunas, true),
+                                    leContadoresDoFicheiro(linhas, colunas, false))){
+                    if (respostaCoordenadas != "sair") {
+                        println("\n" + criaTerreno(terreno, leContadoresDoFicheiro(linhas, colunas, true)
+                                , leContadoresDoFicheiro(linhas, colunas, false), true, true) )
+                        println("Coordenadas da tenda? (ex: 1,B)")
+                        respostaCoordenadas = readLine() ?: null
+                        if (respostaCoordenadas == "sair"){
+                            sair = true
+                            return }
+                        while (processaCoordenadas(respostaCoordenadas, linhas, colunas) == null) {
+                            println("Coordenadas invalidas\nCoordenadas da tenda? (ex: 1,B)")
+                            respostaCoordenadas = readLine() ?: null
+                            if (respostaCoordenadas == "sair"){
+                                sair = true
+                                return }
+                            processaCoordenadas(respostaCoordenadas, linhas, colunas) }
+                        while (!colocaTenda(terreno,coordenadasPair(respostaCoordenadas))){
+                            println("Tenda nao pode ser colocada nestas coordenadas")
+                            println("Coordenadas da tenda? (ex: 1,B)")
+                            respostaCoordenadas = readLine() ?: null
+                            if (respostaCoordenadas == "sair"){
+                                sair = true
+                                return }}
+                        terreno = atualizaTerreno(terreno,coordenadasPair(respostaCoordenadas),
+                                colocaTenda(terreno,coordenadasPair(respostaCoordenadas)))
+                    }else{
+                        sair = true
+                        return }}
+                if (terminouJogo(terreno, leContadoresDoFicheiro(linhas, colunas, true),
+                                leContadoresDoFicheiro(linhas, colunas, false))){
+                    println("\n" + criaTerreno(terreno, leContadoresDoFicheiro(linhas, colunas, true)
+                            , leContadoresDoFicheiro(linhas, colunas, false), true, true) )
+                    println("Parabens! Terminou o jogo!") }}
+            } else println("Terreno invalido")
+            if (sair == false) {
+                println(criaMenu())
+                respostaMenu = validaRespostaMenu()}}
+        return }}
